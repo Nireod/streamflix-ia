@@ -6,7 +6,7 @@
 
 services:
   - type: web
-    name: streamflix
+    name: cineclasico
     runtime: python
     plan: free
     buildCommand: "pip install -r requirements.txt"
