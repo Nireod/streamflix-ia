@@ -19,6 +19,14 @@ Endpoints principales:
 
 import os
 
+# Carga variables desde un archivo .env si existe (solo en local; en Render las
+# variables se definen en el dashboard). Si python-dotenv no está, no pasa nada.
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
