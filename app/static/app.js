@@ -1,11 +1,13 @@
-/* ===== StreamFlix — lógica del frontend ===== */
+/* ===== CineClásico — lógica del frontend ===== */
 import { getSupabase, peliculasAnadidas } from "/supabase-client.js";
+import { icono } from "/iconos.js";
 
 const $ = (sel) => document.querySelector(sel);
 let usuarioActual = null;
 let catalogoCache = null;
 let perfilActivo = null;     // perfil elegido (de Supabase, vía localStorage)
 let añadidasCache = null;    // películas añadidas en Supabase
+let todasLasPelis = [];      // catálogo plano para la búsqueda
 
 // --- Utilidades ---
 async function api(ruta) {
@@ -14,21 +16,38 @@ async function api(ruta) {
   return r.json();
 }
 
+function escapar(s) {
+  return String(s ?? "").replace(/[&<>"]/g, (c) =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+
 function crearTarjeta(peli, opciones = {}) {
   const div = document.createElement("div");
   div.className = "tarjeta";
+  div.tabIndex = 0;
+  div.setAttribute("role", "button");
+  div.setAttribute("aria-label", `Reproducir ${peli.titulo}`);
   const badge = opciones.badge
     ? `<span class="badge ${opciones.badgeClase || ""}">${opciones.badge}</span>`
     : "";
   div.innerHTML = `
     ${badge}
-    <img src="${peli.poster}" alt="${peli.titulo}"
-         onerror="this.style.background='#2a2a2a';this.alt='Sin carátula';" />
+    <img src="${peli.poster}" alt="${escapar(peli.titulo)}" loading="lazy"
+         onerror="this.style.visibility='hidden';" />
+    <div class="tarjeta-overlay">
+      <div class="ov-titulo">${escapar(peli.titulo)}</div>
+      <div class="ov-meta">${peli.anio || ""} · ${escapar(peli.genero)}</div>
+      <span class="ov-play">${icono("play")} Reproducir</span>
+    </div>
     <div class="tarjeta-info">
-      <div class="tarjeta-titulo">${peli.titulo}</div>
-      <div class="tarjeta-meta">${peli.anio} · ${peli.genero}</div>
+      <div class="tarjeta-titulo">${escapar(peli.titulo)}</div>
+      <div class="tarjeta-meta">${peli.anio || ""} · ${escapar(peli.genero)}</div>
     </div>`;
-  div.addEventListener("click", () => reproducir(peli));
+  const ir = () => reproducir(peli);
+  div.addEventListener("click", ir);
+  div.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); ir(); }
+  });
   return div;
 }
 
@@ -37,8 +56,11 @@ function crearFila(titulo, peliculas, opciones = {}) {
   fila.className = "fila";
   const h2 = document.createElement("h2");
   h2.className = "fila-titulo" + (opciones.destacada ? " destacada" : "");
-  h2.textContent = titulo;
+  h2.innerHTML = (opciones.icono ? icono(opciones.icono) : "") + `<span>${escapar(titulo)}</span>`;
   fila.appendChild(h2);
+
+  const wrap = document.createElement("div");
+  wrap.className = "carrusel-wrap";
 
   const carrusel = document.createElement("div");
   carrusel.className = "carrusel";
@@ -51,7 +73,43 @@ function crearFila(titulo, peliculas, opciones = {}) {
     }
     carrusel.appendChild(crearTarjeta(peli, opc));
   });
-  fila.appendChild(carrusel);
+
+  // Flechas de navegación del carrusel
+  const izq = document.createElement("button");
+  izq.className = "flecha izq";
+  izq.setAttribute("aria-label", "Anterior");
+  izq.innerHTML = icono("chevron-left");
+  izq.addEventListener("click", () => carrusel.scrollBy({ left: -600, behavior: "smooth" }));
+
+  const der = document.createElement("button");
+  der.className = "flecha der";
+  der.setAttribute("aria-label", "Siguiente");
+  der.innerHTML = icono("chevron-right");
+  der.addEventListener("click", () => carrusel.scrollBy({ left: 600, behavior: "smooth" }));
+
+  wrap.appendChild(izq);
+  wrap.appendChild(carrusel);
+  wrap.appendChild(der);
+  fila.appendChild(wrap);
+  return fila;
+}
+
+// Skeleton de carga (mientras llegan las recomendaciones).
+function filaSkeleton() {
+  const fila = document.createElement("section");
+  fila.className = "fila";
+  fila.innerHTML = `<h2 class="fila-titulo"><span class="skeleton" style="height:20px;width:200px;display:block;border-radius:4px"></span></h2>`;
+  const wrap = document.createElement("div");
+  wrap.className = "carrusel-wrap";
+  const car = document.createElement("div");
+  car.className = "carrusel";
+  for (let i = 0; i < 8; i++) {
+    const sk = document.createElement("div");
+    sk.className = "skeleton sk-card";
+    car.appendChild(sk);
+  }
+  wrap.appendChild(car);
+  fila.appendChild(wrap);
   return fila;
 }
 
@@ -66,6 +124,8 @@ function pintarHero(peli) {
   hero.style.backgroundImage = `url('${peli.poster}')`;
   $("#hero-titulo").textContent = peli.titulo;
   $("#hero-sinopsis").textContent = peli.sinopsis;
+  $("#hero-play").innerHTML = icono("play") + " Reproducir";
+  $("#hero-info").innerHTML = icono("info") + " Más información";
   $("#hero-play").onclick = () => reproducir(peli);
   $("#hero-info").onclick = () => reproducir(peli);
 }
@@ -74,13 +134,19 @@ function pintarHero(peli) {
 async function cargarParaUsuario(uid) {
   usuarioActual = uid;
   const filas = $("#filas");
+
+  // Mostrar skeletons mientras llega todo.
   filas.innerHTML = "";
+  for (let i = 0; i < 3; i++) filas.appendChild(filaSkeleton());
 
   // Catálogo (una sola vez)
   if (!catalogoCache) catalogoCache = await api("/api/catalogo");
 
   // Recomendaciones personalizadas
   const recs = await api(`/api/recomendaciones/${uid}`);
+
+  // Ya tenemos datos: limpiamos skeletons.
+  filas.innerHTML = "";
 
   // Hero: la mejor recomendación colaborativa (o la primera del catálogo)
   const destacada = recs.colaborativo[0]
@@ -91,20 +157,20 @@ async function cargarParaUsuario(uid) {
   // Fila 1: recomendado para ti (filtrado colaborativo)
   if (recs.colaborativo.length) {
     filas.appendChild(
-      crearFila("✨ Recomendado para ti", recs.colaborativo, { destacada: true })
+      crearFila("Recomendado para ti", recs.colaborativo, { destacada: true, icono: "sparkles" })
     );
   }
 
   // Fila 2: porque coincide con tu perfil (árbol de decisión)
   if (recs.arbol.length) {
     filas.appendChild(
-      crearFila("🌳 Según tu perfil (árbol de decisión)", recs.arbol)
+      crearFila("Según tu perfil (árbol de decisión)", recs.arbol, { icono: "git-branch" })
     );
   }
 
   // Fila: películas añadidas por usuarios (Supabase), si las hay.
   if (añadidasCache && añadidasCache.length) {
-    filas.appendChild(crearFila("🎬 Añadidas a StreamFlix", añadidasCache));
+    filas.appendChild(crearFila("Añadidas a CineClásico", añadidasCache, { icono: "film" }));
   }
 
   // Filas por género (mezclando catálogo base + añadidas del mismo género)
@@ -115,6 +181,9 @@ async function cargarParaUsuario(uid) {
   Object.entries(porGenero).forEach(([genero, pelis]) => {
     filas.appendChild(crearFila(genero, pelis));
   });
+
+  // Construir índice plano para la búsqueda.
+  todasLasPelis = [...catalogoCache.peliculas, ...(añadidasCache || [])];
 
   // Panel comparación + métricas
   cargarComparacion(uid);

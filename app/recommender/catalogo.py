@@ -14,6 +14,8 @@ Características (en orden):
     suspenso, cine_negro, aventura, mudo, clasico_pre1940
 """
 
+import os
+
 # Nombres de las características en orden. Sirve para el árbol de decisión.
 CARACTERISTICAS = [
     "accion",
@@ -44,10 +46,22 @@ def _peli(id, titulo, anio, director, genero, archive_id, sinopsis, **caract):
         "director": director,
         "genero": genero,
         "archive_id": archive_id,
-        "poster": f"https://archive.org/services/img/{archive_id}",
+        "poster": _poster(id, archive_id),
         "sinopsis": sinopsis,
         "caracteristicas": _features(**caract),
     }
+
+
+# Carpeta de posters locales (descargados de Wikimedia, ya redimensionados).
+_DIR_POSTERS = os.path.join(os.path.dirname(__file__), "..", "static", "posters")
+
+
+def _poster(id, archive_id):
+    """Usa el poster local /posters/{id}.jpg si existe; si no, el de Archive.org."""
+    local = os.path.join(_DIR_POSTERS, f"{id}.jpg")
+    if os.path.exists(local):
+        return f"/posters/{id}.jpg"
+    return f"https://archive.org/services/img/{archive_id}"
 
 
 # id interno -> datos. El campo archive_id es el identificador REAL en archive.org.

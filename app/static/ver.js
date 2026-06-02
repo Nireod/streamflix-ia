@@ -15,7 +15,7 @@ function pintarReproductor(tipo, src) {
 
 function pintarInfo(peli, fuenteTexto) {
   document.getElementById("ver-titulo").textContent = peli.titulo;
-  document.title = `${peli.titulo} — StreamFlix`;
+  document.title = `${peli.titulo} — CineClásico`;
   const meta = [peli.anio, peli.genero, peli.director ? "Dir. " + peli.director : ""]
     .filter(Boolean).join(" · ");
   document.getElementById("ver-meta").textContent = meta;

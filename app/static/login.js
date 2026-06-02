@@ -28,7 +28,6 @@ async function init() {
   if (!cfg.auth_habilitado) {
     $("#aviso-demo").classList.remove("oculto");
     $("#form-auth").classList.add("oculto");
-    $("#btn-google").classList.add("oculto");
     $(".auth-switch").classList.add("oculto");
     return;
   }
@@ -69,15 +68,6 @@ async function init() {
       return;
     }
     window.location.href = "/perfiles";
-  });
-
-  // Botón de Google (OAuth). Funciona si activas el proveedor Google en Supabase.
-  $("#btn-google").addEventListener("click", async () => {
-    const { error } = await sb.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: window.location.origin + "/perfiles" },
-    });
-    if (error) mostrarError("Google no está habilitado aún en Supabase: " + error.message);
   });
 }
 
