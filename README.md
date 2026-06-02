@@ -13,7 +13,8 @@ reproducibles desde [Internet Archive](https://archive.org).
 - **Validación cruzada** (k-fold) con métricas MAE, RMSE y precisión.
 - **Interfaz web estilo Netflix**: carruseles, carátulas, perfiles y reproductor real.
 - **Comparación** entre el sistema actual (popularidad) y el nuevo (IA personalizada).
-- **17 películas de dominio público** que se reproducen de verdad (Nosferatu, Metropolis, etc.).
+- **57 películas de dominio público** que se reproducen de verdad (Nosferatu, Metropolis, etc.).
+- **Página de reproducción propia** (`/ver/{id}`) con películas similares, sin salir del sitio.
 
 ## 🗂️ Estructura
 
@@ -74,6 +75,8 @@ Abre <http://localhost:8000> en el navegador.
 | GET | `/api/usuarios` | Lista de perfiles ficticios |
 | GET | `/api/catalogo` | Catálogo completo, agrupado por género |
 | GET | `/api/pelicula/{id}` | Detalle + URL de reproducción |
+| GET | `/api/relacionadas/{id}` | Películas similares por contenido |
+| GET | `/ver/{id}` | Página propia de reproducción |
 | GET | `/api/recomendaciones/{uid}` | Recomendaciones personalizadas |
 | GET | `/api/populares` | Ranking del sistema actual (popularidad) |
 | GET | `/api/comparacion/{uid}` | Personalizado vs popular |

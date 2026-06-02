@@ -25,7 +25,7 @@ function crearTarjeta(peli, opciones = {}) {
       <div class="tarjeta-titulo">${peli.titulo}</div>
       <div class="tarjeta-meta">${peli.anio} · ${peli.genero}</div>
     </div>`;
-  div.addEventListener("click", () => abrirModal(peli));
+  div.addEventListener("click", () => reproducir(peli));
   return div;
 }
 
@@ -52,22 +52,10 @@ function crearFila(titulo, peliculas, opciones = {}) {
   return fila;
 }
 
-// --- Modal reproductor ---
-function abrirModal(peli) {
-  $("#modal-iframe").src = peli.embed;
-  $("#modal-titulo").textContent = peli.titulo;
-  $("#modal-meta").textContent = `${peli.anio} · ${peli.genero} · Dir. ${peli.director}`;
-  $("#modal-sinopsis").textContent = peli.sinopsis;
-  $("#modal").classList.remove("oculto");
+// --- Reproducción: navega a la página propia /ver/{id} ---
+function reproducir(peli) {
+  window.location.href = `/ver/${peli.id}`;
 }
-function cerrarModal() {
-  $("#modal").classList.add("oculto");
-  $("#modal-iframe").src = ""; // detiene la reproducción
-}
-$("#modal-cerrar").addEventListener("click", cerrarModal);
-$("#modal").addEventListener("click", (e) => {
-  if (e.target.id === "modal") cerrarModal();
-});
 
 // --- Hero ---
 function pintarHero(peli) {
@@ -75,8 +63,8 @@ function pintarHero(peli) {
   hero.style.backgroundImage = `url('${peli.poster}')`;
   $("#hero-titulo").textContent = peli.titulo;
   $("#hero-sinopsis").textContent = peli.sinopsis;
-  $("#hero-play").onclick = () => abrirModal(peli);
-  $("#hero-info").onclick = () => abrirModal(peli);
+  $("#hero-play").onclick = () => reproducir(peli);
+  $("#hero-info").onclick = () => reproducir(peli);
 }
 
 // --- Carga principal por usuario ---

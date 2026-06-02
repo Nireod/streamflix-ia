@@ -32,7 +32,7 @@ reproducible (semilla fija), simulando lo que StreamFlix tendría en producción
 
 | Dato | Descripción | Origen real en producción |
 |------|-------------|---------------------------|
-| **Catálogo** | 17 películas con id, título, año, director, género y un **vector de características** binarias (terror, comedia, mudo, etc.). | Base de datos de contenido / metadatos. |
+| **Catálogo** | 57 películas con id, título, año, director, género y un **vector de características** binarias (terror, comedia, mudo, etc.). | Base de datos de contenido / metadatos. |
 | **Usuarios** | 60 perfiles con un *arquetipo* de gustos (p. ej. "Fan del terror clásico"). | Cuentas / perfiles de la plataforma. |
 | **Calificaciones (ratings)** | Matriz usuario × película con valores de 1 a 5 estrellas; con huecos (no visto). | Historial de visualización, likes, calificaciones. |
 | **Popularidad** | Promedio de calificaciones por película (sistema actual). | Métricas agregadas. |

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ peli.titulo }} — StreamFlix</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="pagina-ver">
+  <header class="navbar solido">
+    <a class="brand" href="/">STREAM<span>FLIX</span></a>
+    <a class="btn btn-info" href="/">← Volver al inicio</a>
+  </header>
+
+  <main class="ver-main">
+    <!-- Reproductor principal -->
+    <div class="reproductor">
+      <iframe
+        src="{{ peli.embed }}"
+        allowfullscreen
+        frameborder="0"
+        allow="autoplay; fullscreen"></iframe>
+    </div>
+
+    <!-- Datos de la película -->
+    <section class="ver-info">
+      <h1>{{ peli.titulo }}</h1>
+      <p class="ver-meta">{{ peli.anio }} · {{ peli.genero }} · Dirigida por {{ peli.director }}</p>
+      <p class="ver-sinopsis">{{ peli.sinopsis }}</p>
+      <p class="ver-fuente">
+        🎬 Reproducción legal de una película de dominio público alojada en
+        <a href="https://archive.org/details/{{ peli.embed.split('/')[-1] }}" target="_blank" rel="noopener">Internet Archive</a>.
+      </p>
+    </section>
+
+    <!-- Relacionadas -->
+    {% if relacionadas %}
+    <section class="fila">
+      <h2 class="fila-titulo">Películas similares</h2>
+      <div class="carrusel">
+        {% for r in relacionadas %}
+        <a class="tarjeta" href="/ver/{{ r.id }}">
+          <img src="{{ r.poster }}" alt="{{ r.titulo }}"
+               onerror="this.style.background='#2a2a2a';" />
+          <div class="tarjeta-info">
+            <div class="tarjeta-titulo">{{ r.titulo }}</div>
+            <div class="tarjeta-meta">{{ r.anio }} · {{ r.genero }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  </main>
+
+  <footer class="footer">
+    <p>StreamFlix · Proyecto académico · Películas de dominio público vía
+       <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive</a>.</p>
+  </footer>
+</body>
+</html>
