@@ -15,6 +15,9 @@ reproducibles desde [Internet Archive](https://archive.org).
 - **Comparación** entre el sistema actual (popularidad) y el nuevo (IA personalizada).
 - **57 películas de dominio público** que se reproducen de verdad (Nosferatu, Metropolis, etc.).
 - **Página de reproducción propia** (`/ver/{id}`) con películas similares, sin salir del sitio.
+- **Login y perfiles** con Supabase Auth (varios perfiles por cuenta, tipo Netflix).
+- **Añadir películas** desde la web con cualquier enlace (YouTube, Vimeo, Drive, `.mp4`, Doodstream, Archive).
+- Funciona en **modo demo** sin configurar Supabase; el login se activa al poner las claves.
 
 ## 🗂️ Estructura
 
@@ -67,6 +70,15 @@ Abre <http://localhost:8000> en el navegador.
 
 > **Nota:** en el plan gratuito de Render el servicio "se duerme" tras unos minutos de
 > inactividad; la primera visita tras el reposo puede tardar ~30 s en responder.
+
+## 🔐 Login y base de datos (Supabase)
+
+El login, los perfiles por cuenta y el guardado de películas usan **Supabase**.
+Sin configurar, la app corre en **modo demo** (perfiles ficticios, sin login).
+
+Para activarlo: ejecuta [`supabase/schema.sql`](supabase/schema.sql) en tu proyecto
+de Supabase y define las variables `SUPABASE_URL` y `SUPABASE_ANON_KEY`. Pasos
+detallados en [`supabase/CONFIGURACION.md`](supabase/CONFIGURACION.md).
 
 ## 🔌 Endpoints de la API
 

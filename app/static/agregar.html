@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Añadir película — StreamFlix</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="pagina-auth">
+  <header class="navbar solido">
+    <a class="brand" href="/">STREAM<span>FLIX</span></a>
+    <a class="btn btn-info" href="/">← Volver</a>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-caja auth-ancho">
+      <h1>Añadir película</h1>
+      <p class="auth-sub">
+        Pega el enlace de un video de YouTube, Vimeo, Google Drive, un <code>.mp4</code>
+        directo, Doodstream o Internet Archive. Se detecta la fuente automáticamente.
+      </p>
+
+      <div id="aviso-login" class="aviso oculto">
+        Necesitas <a href="/login">iniciar sesión</a> para añadir películas.
+      </div>
+
+      <form id="form-agregar" class="auth-form">
+        <div class="grid-2">
+          <label>Título *
+            <input type="text" id="titulo" required />
+          </label>
+          <label>Año
+            <input type="number" id="anio" min="1880" max="2100" placeholder="1999" />
+          </label>
+        </div>
+        <div class="grid-2">
+          <label>Director
+            <input type="text" id="director" />
+          </label>
+          <label>Género *
+            <select id="genero">
+              <option>Terror</option><option>Comedia</option><option>Drama</option>
+              <option>Ciencia ficción</option><option>Cine negro</option>
+              <option>Aventura</option><option>Suspenso</option><option>Otro</option>
+            </select>
+          </label>
+        </div>
+        <label>URL de reproducción (embed) *
+          <input type="url" id="embed_url" required
+                 placeholder="https://www.youtube.com/watch?v=..." />
+        </label>
+        <label>URL de carátula (poster) — opcional
+          <input type="url" id="poster" placeholder="https://..." />
+        </label>
+        <label>Sinopsis
+          <textarea id="sinopsis" rows="3"></textarea>
+        </label>
+
+        <fieldset class="caracts">
+          <legend>Características (para las recomendaciones)</legend>
+          <div class="caracts-grid" id="caracts"></div>
+        </fieldset>
+
+        <p class="auth-error oculto" id="error"></p>
+        <p class="auth-ok oculto" id="ok"></p>
+        <button type="submit" class="btn btn-play" id="btn-guardar">Añadir al catálogo</button>
+      </form>
+    </div>
+  </main>
+
+  <script type="module" src="/agregar.js"></script>
+</body>
+</html>

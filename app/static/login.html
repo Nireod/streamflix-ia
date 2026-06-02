@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar sesión — StreamFlix</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="pagina-auth">
+  <header class="navbar solido">
+    <a class="brand" href="/">STREAM<span>FLIX</span></a>
+  </header>
+
+  <main class="auth-main">
+    <div class="auth-caja">
+      <h1 id="auth-titulo">Iniciar sesión</h1>
+
+      <div id="aviso-demo" class="aviso oculto">
+        Supabase no está configurado: la app funciona en <b>modo demo</b> sin login.
+        <a href="/">Entrar al catálogo →</a>
+      </div>
+
+      <form id="form-auth" class="auth-form">
+        <label>Correo electrónico
+          <input type="email" id="email" required placeholder="tucorreo@ejemplo.com" />
+        </label>
+        <label>Contraseña
+          <input type="password" id="password" required minlength="6" placeholder="••••••••" />
+        </label>
+        <p class="auth-error oculto" id="auth-error"></p>
+        <button type="submit" class="btn btn-play" id="btn-enviar">Entrar</button>
+      </form>
+
+      <button class="btn btn-google" id="btn-google">
+        <span>G</span> Continuar con Google
+      </button>
+
+      <p class="auth-switch">
+        <span id="switch-texto">¿No tienes cuenta?</span>
+        <a href="#" id="switch-link">Regístrate</a>
+      </p>
+    </div>
+  </main>
+
+  <script type="module" src="/login.js"></script>
+</body>
+</html>

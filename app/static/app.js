@@ -1,8 +1,11 @@
 /* ===== StreamFlix — lógica del frontend ===== */
+import { getSupabase, peliculasAnadidas } from "/supabase-client.js";
 
 const $ = (sel) => document.querySelector(sel);
 let usuarioActual = null;
 let catalogoCache = null;
+let perfilActivo = null;     // perfil elegido (de Supabase, vía localStorage)
+let añadidasCache = null;    // películas añadidas en Supabase
 
 // --- Utilidades ---
 async function api(ruta) {
@@ -99,8 +102,17 @@ async function cargarParaUsuario(uid) {
     );
   }
 
-  // Filas por género
-  Object.entries(catalogoCache.por_genero).forEach(([genero, pelis]) => {
+  // Fila: películas añadidas por usuarios (Supabase), si las hay.
+  if (añadidasCache && añadidasCache.length) {
+    filas.appendChild(crearFila("🎬 Añadidas a StreamFlix", añadidasCache));
+  }
+
+  // Filas por género (mezclando catálogo base + añadidas del mismo género)
+  const porGenero = { ...catalogoCache.por_genero };
+  (añadidasCache || []).forEach((p) => {
+    (porGenero[p.genero] = porGenero[p.genero] || []).push(p);
+  });
+  Object.entries(porGenero).forEach(([genero, pelis]) => {
     filas.appendChild(crearFila(genero, pelis));
   });
 
@@ -160,9 +172,33 @@ window.addEventListener("scroll", () => {
   $("#navbar").classList.toggle("solido", window.scrollY > 60);
 });
 
+// Mapea el arquetipo del perfil activo al usuario del motor de recomendación.
+function usuarioParaArquetipo(usuarios, arquetipo) {
+  const match = usuarios.find((u) => u.arquetipo === arquetipo);
+  return match ? match.id : usuarios[0].id;
+}
+
 // --- Init ---
 async function init() {
   const usuarios = await api("/api/usuarios");
+
+  // ¿Supabase activo y hay sesión? Si está activo pero sin sesión -> login.
+  const sb = await getSupabase();
+  if (sb) {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = "/login"; return; }
+    // Perfil activo elegido en /perfiles.
+    const guardado = localStorage.getItem("streamflix_perfil");
+    if (!guardado) { window.location.href = "/perfiles"; return; }
+    perfilActivo = JSON.parse(guardado);
+    // Cargar películas añadidas (catálogo compartido).
+    añadidasCache = await peliculasAnadidas();
+  }
+
+  // Barra superior: nombre del perfil + acciones.
+  pintarBarraPerfil(usuarios, sb);
+
+  // Selector de perfil (modo demo) o usuario mapeado por arquetipo.
   const selector = $("#selector-perfil");
   usuarios.forEach((u) => {
     const opt = document.createElement("option");
@@ -172,8 +208,32 @@ async function init() {
   });
   selector.addEventListener("change", (e) => cargarParaUsuario(Number(e.target.value)));
 
-  await cargarParaUsuario(usuarios[0].id);
+  const inicial = perfilActivo
+    ? usuarioParaArquetipo(usuarios, perfilActivo.arquetipo)
+    : usuarios[0].id;
+  selector.value = inicial;
+  await cargarParaUsuario(inicial);
   cargarMetricas();
+}
+
+function pintarBarraPerfil(usuarios, sb) {
+  if (perfilActivo) {
+    // Logueado: ocultar el selector demo y mostrar perfil + acciones.
+    $("#demo-selector").style.display = "none";
+    const acciones = document.createElement("div");
+    acciones.className = "perfil-acciones";
+    acciones.innerHTML = `
+      <a class="btn btn-mini" href="/agregar">＋ Añadir película</a>
+      <a class="btn btn-mini" href="/perfiles">${perfilActivo.avatar || "🎬"} ${perfilActivo.nombre}</a>
+      <button class="btn btn-mini" id="btn-logout">Salir</button>`;
+    $("#perfil-box").appendChild(acciones);
+    $("#btn-logout").addEventListener("click", async () => {
+      localStorage.removeItem("streamflix_perfil");
+      if (sb) await sb.auth.signOut();
+      window.location.href = "/login";
+    });
+  }
+  // En modo demo (sin Supabase) se mantiene el selector de perfil ya presente.
 }
 
 init();

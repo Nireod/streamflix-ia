@@ -24,7 +24,7 @@ from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from .recommender import catalogo, datos, colaborativo, arbol, validacion
+from .recommender import catalogo, datos, colaborativo, arbol, validacion, embeds
 
 app = FastAPI(title="StreamFlix — Sistema de recomendación", version="1.0")
 
@@ -34,9 +34,27 @@ PLANTILLAS = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "
 # Caché del reporte de métricas (la validación cruzada es algo costosa).
 _metricas_cache = None
 
+# Configuración pública de Supabase. Estas dos claves son SEGURAS para el
+# frontend (la 'anon key' es pública por diseño; la seguridad la dan las
+# políticas RLS de la base de datos). Se leen de variables de entorno en
+# Render; en local pueden quedar vacías (la app funciona sin login).
+SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
+SUPABASE_ANON_KEY = os.environ.get("SUPABASE_ANON_KEY", "")
+
+
+@app.get("/api/config")
+def config_publica():
+    """Config pública que el frontend usa para inicializar supabase-js."""
+    return {
+        "supabase_url": SUPABASE_URL,
+        "supabase_anon_key": SUPABASE_ANON_KEY,
+        "auth_habilitado": bool(SUPABASE_URL and SUPABASE_ANON_KEY),
+    }
+
 
 def _pelicula_publica(peli: dict) -> dict:
     """Versión de la película para enviar al frontend (sin el vector interno)."""
+    fuente = embeds.detectar(catalogo.url_embed(peli["id"]))
     return {
         "id": peli["id"],
         "titulo": peli["titulo"],
@@ -45,7 +63,8 @@ def _pelicula_publica(peli: dict) -> dict:
         "genero": peli["genero"],
         "sinopsis": peli["sinopsis"],
         "poster": peli["poster"],
-        "embed": catalogo.url_embed(peli["id"]),
+        "embed": fuente["src"],
+        "embed_tipo": fuente["tipo"],  # "video" o "iframe"
     }
 
 
@@ -56,6 +75,12 @@ def listar_usuarios():
         {"id": u["id"], "nombre": u["nombre"], "arquetipo": u["arquetipo"]}
         for u in datos.USUARIOS
     ]
+
+
+@app.get("/api/arquetipos")
+def listar_arquetipos():
+    """Tipos de gustos disponibles para crear un perfil (alimentan el motor)."""
+    return list(datos.ARQUETIPOS.keys())
 
 
 @app.get("/api/catalogo")
@@ -200,24 +225,52 @@ def relacionadas(pelicula_id: int, n: int = 8):
 # --- Página propia de reproducción ---
 
 @app.get("/ver/{pelicula_id}", response_class=HTMLResponse)
-def ver_pelicula(request: Request, pelicula_id: int):
-    """Página de reproducción dentro del propio sitio (no redirige fuera)."""
-    peli = catalogo.obtener_pelicula(pelicula_id)
-    if not peli:
-        raise HTTPException(status_code=404, detail="Película no encontrada")
+def ver_pelicula(request: Request, pelicula_id: str):
+    """
+    Página de reproducción dentro del propio sitio (no redirige fuera).
+
+    Sirve una plantilla 'shell' que el JS rellena. El id puede ser:
+      - numérico (1..57)  -> película del catálogo base (datos vía /api/pelicula)
+      - 'sb_<n>'          -> película añadida en Supabase (datos vía supabase-js)
+    """
     return PLANTILLAS.TemplateResponse("ver.html", {
         "request": request,
-        "peli": _pelicula_publica(peli),
-        "relacionadas": [_pelicula_publica(p) for p in _relacionadas(pelicula_id, 6)],
+        "pelicula_id": pelicula_id,
     })
+
+
+@app.get("/api/normalizar-embed")
+def normalizar_embed(url: str):
+    """Dada una URL cualquiera, devuelve cómo reproducirla (tipo + src)."""
+    return embeds.detectar(url)
 
 
 # --- Frontend estático (web estilo Netflix) ---
 # Se monta al final para que las rutas /api/* y /ver/* tengan prioridad.
 
+def _pagina(nombre: str):
+    """Sirve un .html de la carpeta static por su nombre de ruta."""
+    return FileResponse(os.path.join(ESTATICOS, nombre))
+
+
 @app.get("/")
 def raiz():
-    return FileResponse(os.path.join(ESTATICOS, "index.html"))
+    return _pagina("index.html")
+
+
+@app.get("/login")
+def pagina_login():
+    return _pagina("login.html")
+
+
+@app.get("/perfiles")
+def pagina_perfiles():
+    return _pagina("perfiles.html")
+
+
+@app.get("/agregar")
+def pagina_agregar():
+    return _pagina("agregar.html")
 
 
 app.mount("/", StaticFiles(directory=ESTATICOS, html=True), name="static")

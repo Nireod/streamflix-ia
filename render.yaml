@@ -15,3 +15,10 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: "3.12.0"
+      # Claves públicas de Supabase (login + base de datos). Se ponen a mano en
+      # el dashboard de Render; si se dejan vacías, la app corre en modo demo.
+      # Guía: supabase/CONFIGURACION.md
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>¿Quién está viendo? — StreamFlix</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="pagina-auth">
+  <header class="navbar solido">
+    <a class="brand" href="/">STREAM<span>FLIX</span></a>
+    <button class="btn btn-info" id="btn-salir">Cerrar sesión</button>
+  </header>
+
+  <main class="perfiles-main">
+    <h1>¿Quién está viendo?</h1>
+    <div class="perfiles-grid" id="perfiles-grid">
+      <p>Cargando perfiles…</p>
+    </div>
+  </main>
+
+  <!-- Modal crear perfil -->
+  <div class="modal oculto" id="modal-perfil">
+    <div class="modal-caja modal-pequeno">
+      <button class="modal-cerrar" id="cerrar-perfil">✕</button>
+      <h2>Nuevo perfil</h2>
+      <form id="form-perfil" class="auth-form">
+        <label>Nombre del perfil
+          <input type="text" id="perfil-nombre" required placeholder="Ej. Dioner" />
+        </label>
+        <label>Tipo de gustos (alimenta las recomendaciones)
+          <select id="perfil-arquetipo"></select>
+        </label>
+        <button type="submit" class="btn btn-play">Crear perfil</button>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="/perfiles.js"></script>
+</body>
+</html>
