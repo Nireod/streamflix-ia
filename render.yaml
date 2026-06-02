@@ -1,0 +1,17 @@
+# Configuración de despliegue para Render (https://render.com)
+# Render lee este archivo automáticamente al conectar el repositorio.
+#
+# Crea un servicio web gratuito que instala las dependencias y arranca la API.
+# El puerto lo provee Render en la variable de entorno $PORT.
+
+services:
+  - type: web
+    name: streamflix
+    runtime: python
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+    autoDeploy: true
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.0"

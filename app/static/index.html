@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StreamFlix — Recomendaciones con IA</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- Barra superior -->
+  <header class="navbar" id="navbar">
+    <div class="brand">STREAM<span>FLIX</span></div>
+    <div class="perfil-box">
+      <label for="selector-perfil">Perfil:</label>
+      <select id="selector-perfil"></select>
+    </div>
+  </header>
+
+  <!-- Hero / banner principal -->
+  <section class="hero" id="hero">
+    <div class="hero-degradado"></div>
+    <div class="hero-contenido">
+      <h1 id="hero-titulo">StreamFlix</h1>
+      <p id="hero-sinopsis">Recomendaciones personalizadas con Inteligencia Artificial.</p>
+      <div class="hero-botones">
+        <button class="btn btn-play" id="hero-play">► Reproducir</button>
+        <button class="btn btn-info" id="hero-info">Más información</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filas de contenido (carruseles) -->
+  <main id="filas"></main>
+
+  <!-- Panel de métricas / comparación (para la demo y el informe) -->
+  <section class="panel-metricas" id="panel-metricas">
+    <h2>📊 Rendimiento del modelo (evidencia para el informe)</h2>
+    <div class="metricas-grid" id="metricas-grid">
+      <p>Cargando métricas de validación cruzada…</p>
+    </div>
+    <div class="comparacion" id="comparacion"></div>
+  </section>
+
+  <footer class="footer">
+    <p>StreamFlix · Proyecto académico · Películas de dominio público vía
+       <a href="https://archive.org" target="_blank" rel="noopener">Internet Archive</a>.</p>
+  </footer>
+
+  <!-- Modal del reproductor -->
+  <div class="modal oculto" id="modal">
+    <div class="modal-caja">
+      <button class="modal-cerrar" id="modal-cerrar">✕</button>
+      <div class="modal-video">
+        <iframe id="modal-iframe" src="" allowfullscreen frameborder="0"></iframe>
+      </div>
+      <div class="modal-info">
+        <h2 id="modal-titulo"></h2>
+        <p class="modal-meta" id="modal-meta"></p>
+        <p id="modal-sinopsis"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
